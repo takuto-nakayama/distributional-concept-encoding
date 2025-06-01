@@ -26,7 +26,7 @@ class General:
 			print('ID Error: The data id already exists in the directory. Try another.')
 			sys.exit()
 		
-		with open(f'results/{self.project_id}/info/{self.data_id}.txt', 'w') as f:
+		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'w') as f:
 			f.write(info)
 
 		print(info)
@@ -46,7 +46,7 @@ class General:
 
 
 class Embedding:
-	def __init__(self, tokenizer:str, model:str, process_id:str, text:list):
+	def __init__(self, tokenizer:str, model:str, project_id:str, text:list):
 		self.tokenizer = BertTokenizer.from_pretrained(tokenizer)
 		self.model = BertModel.from_pretrained(model)
 		self.text = text
@@ -86,10 +86,10 @@ class Embedding:
 
 
 class Density:
-	def __init__(self, process_id):
+	def __init__(self, project_id):
 		self.dict_kde = {}
 		self.list_entropy = []
-		self.process_id = process.id
+		self.project_id = project_id
 
 
 	def kde(self, dict_embeddings):
@@ -108,7 +108,7 @@ class Density:
 
 
 	def save(self, data_id):
-		if 'entropy.csv' not in os.listdir(f'results/{self.process_id}'):
+		if 'entropy.csv' not in os.listdir(f'results/{self.project_id}'):
 			with open('entropy.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
 				writer.writerow([data_id, self.entropy])
@@ -117,7 +117,7 @@ class Density:
 				writer = csv.writer(f)
 				writer.writerow([data_id, self.entropy])
 
-		if 'histograms' not in os.listdir(f'results/{self.process_id}'):
+		if 'histograms' not in os.listdir(f'results/{self.project_id}'):
 			os.mkdir('histograms')
 
 		plt.hist(self.list_entropy, bins=50)
@@ -125,4 +125,5 @@ class Density:
 		plt.title(f'{data_id}')
 		plt.xlabel('Entropy')
 		plt.ylabel('Frequency')
-		plt.savefig(f'result/{self.process_id}/histograms/{data_id}-histogram.png')
+		plt.savefig(f'result/{self.project_id}/histograms/histogram-{data_id}.png')
+		plt.show()
