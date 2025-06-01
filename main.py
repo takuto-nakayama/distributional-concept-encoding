@@ -22,7 +22,8 @@ if __name__ == '__main__':
 	start = time.time()
 	t = datetime.now() 
 	## general info of the process
-	info = f'''Analysis began: {t.strftime("%H:%M:%S")}.
+	info = f'''
+	Analysis began: {t.strftime("%H:%M:%S")}.
 	-----initial settings-----
 	data source: {args.data_source}
 	project id: {args.project_id}

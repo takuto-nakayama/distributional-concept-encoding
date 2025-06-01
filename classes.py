@@ -12,14 +12,15 @@ class General:
 		self.project_id = project_id
 		self.data_id = data_id
 
-		if 'results' not in os.dirlist:
+		if 'results' not in os.listdir():
 			os.mkdir('results')
-		elif f'results/{self.project_id}' not in os.dirlist('results'):
+			os.mkdir(f'results/{self.project_id}')
+		elif self.project_id not in os.listdir('results'):
 			os.mkdir(f'results/{self.project_id}')
 
 
 	def info(self, info):
-		if 'info' not in os.listdir(f'result/{self.project_id}'):
+		if 'info' not in os.listdir(f'results/{self.project_id}'):
 			os.mkdir(f'results/{self.project_id}/info')
 		
 		if f'{self.data_id}.txt' in os.listdir(f'results/{self.project_id}/info'):
@@ -125,5 +126,5 @@ class Density:
 		plt.title(f'{data_id}')
 		plt.xlabel('Entropy')
 		plt.ylabel('Frequency')
-		plt.savefig(f'result/{self.project_id}/histograms/histogram-{data_id}.png')
+		plt.savefig(f'results/{self.project_id}/histograms/histogram-{data_id}.png')
 		plt.show()
