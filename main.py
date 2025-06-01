@@ -54,7 +54,7 @@ if __name__ == '__main__':
 	#  estimating probability density
 	density.kde(dict_embeddings)
 	density.entropy(args.num_samples)
-	density.save()
+	density.save(args.data_id)
 	print(f'Entropy: {density.entropy()}.')
 
 	#  terminating the proess
