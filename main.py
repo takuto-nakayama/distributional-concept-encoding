@@ -13,6 +13,7 @@ if __name__ == '__main__':
 	parser.add_argument('--mode', type=str, default='path')
 	parser.add_argument('--tokenizer', type=str, help='Tokenizer to use', default='bert-base-cased')
 	parser.add_argument('--model', type=str, help='Model to use', default='bert-base-cased')
+	parser.add_argument('--gpu', type=int, default=1, nargs='?', const=True, help='0: using CPU; 1: using GPU')
 	parser.add_argument('--batch', type=int, help='The number of lines that are simultaneously processed into embeddings', default=100)
 	parser.add_argument('--num_samples', type=int, default=100000)
 	args = parser.parse_args()
@@ -22,18 +23,18 @@ if __name__ == '__main__':
 	start = time.time()
 	t = datetime.now() 
 	## general info of the process
-	info = f'''
-	Analysis began: {t.strftime("%H:%M:%S")}.
-	-----initial settings-----
-	data source: {args.data_source}
-	project id: {args.project_id}
-	data id: {args.data_id}
-	mode: {args.mode}
-	tokenizer: {args.tokenizer}
-	model: {args.model}
-	batch: {args.batch}
-	sample number: {args.num_samples}
-	--------------------------'''
+	info = f'''\nAnalysis began: {t.strftime("%H:%M:%S")}.
+-----initial settings-----
+data source: {args.data_source}
+project id: {args.project_id}
+data id: {args.data_id}
+mode: {args.mode}
+tokenizer: {args.tokenizer}
+model: {args.model}
+gpu: {'yes' if args.gpu==1 else 'no'}
+batch: {args.batch}
+sample number: {args.num_samples}
+--------------------------\n'''
 
 	general = General(args.project_id, args.data_id)
 	# loading data
@@ -43,7 +44,7 @@ if __name__ == '__main__':
 
 	#  calling the classes
 	## for embedding and estimation of probability density
-	embedding = Embedding(args.tokenizer, args.model, args.project_id, general.text)
+	embedding = Embedding(args.tokenizer, args.model, args.gpu, args.project_id, general.text)
 	density = Density(args.project_id)
 	
 	#  embedding text in data

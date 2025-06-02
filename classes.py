@@ -47,27 +47,38 @@ class General:
 
 
 class Embedding:
-	def __init__(self, tokenizer:str, model:str, project_id:str, text:list):
+	def __init__(self, tokenizer:str, model:str, gpu:int, project_id:str, text:list):
 		self.tokenizer = BertTokenizer.from_pretrained(tokenizer)
 		self.model = BertModel.from_pretrained(model)
+		self.gpu = gpu
 		self.text = text
 		self.dict_sws_embs = {}
+
+		if self.gpu == 1:
+			self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+			self.model = self.model.to(self.device)
+			print(f'Using device: {self.device}')
+		else:
+			print(f'Using device: cpu\n')
 
 
 	def embed(self, batch):
 		for i in range(batch,len(self.text)+1, batch):
 			batch_text = self.text[i-batch:i]
 			encoded = self.tokenizer(batch_text, return_tensors='pt', truncation=True, padding=True)
+			if self.gpu == 1:
+				encoded = {key: value.to(self.device) for key, value in encoded.items()}
 			subwords = [self.tokenizer.convert_ids_to_tokens(encoded['input_ids'][i]) for i in range(encoded['input_ids'].shape[0])]
-			output = self.model(**encoded).last_hidden_state.squeeze(0)
+			with torch.no_grad():
+				output = self.model(**encoded).last_hidden_state.squeeze(0)
+				for sws, embs in zip(subwords, output):
+					for sw, emb in zip(sws, embs):
+						emb = emb.unsqueeze(0)
+						if sw not in self.dict_sws_embs:
+							self.dict_sws_embs[sw] = emb
+						else:
+							self.dict_sws_embs[sw] = torch.cat((self.dict_sws_embs[sw], emb), dim=0)
 
-			for sws, embs in zip(subwords, output):
-				for sw, emb in zip(sws, embs):
-					emb = emb.unsqueeze(0)
-					if sw not in self.dict_sws_embs:
-						self.dict_sws_embs[sw] = emb
-					else:
-						self.dict_sws_embs[sw] = torch.cat((self.dict_sws_embs[sw], emb), dim=0)
 			percent = int(i / len(self.text) * 100)
 			process = int(percent / 2)
 			print(f'\rprocessed: |{"#"*process}{"-"*(50-process)}| {percent}%', end='')
