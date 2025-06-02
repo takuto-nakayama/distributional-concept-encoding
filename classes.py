@@ -1,6 +1,7 @@
 from transformers import BertTokenizer, BertModel
 from scipy.stats import gaussian_kde
 from datetime import datetime
+from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 import math, torch, os, csv, sys
@@ -52,12 +53,12 @@ class Embedding:
 		self.model = BertModel.from_pretrained(model)
 		self.gpu = gpu
 		self.text = text
-		self.dict_sws_embs = {}
+		self.dict_sws_embs = defaultdict(list)
 
 		if self.gpu == 1:
 			self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 			self.model = self.model.to(self.device)
-			print(f'Using device: {self.device}')
+			print(f'Using device: {self.device}\n')
 		else:
 			print(f'Using device: cpu\n')
 
@@ -73,16 +74,15 @@ class Embedding:
 				output = self.model(**encoded).last_hidden_state.squeeze(0)
 				for sws, embs in zip(subwords, output):
 					for sw, emb in zip(sws, embs):
-						emb = emb.unsqueeze(0)
-						if sw not in self.dict_sws_embs:
-							self.dict_sws_embs[sw] = emb
-						else:
-							self.dict_sws_embs[sw] = torch.cat((self.dict_sws_embs[sw], emb), dim=0)
+						self.dict_sws_embs[sw].append(emb.cpu())
 
 			percent = int(i / len(self.text) * 100)
 			process = int(percent / 2)
 			print(f'\rprocessed: |{"#"*process}{"-"*(50-process)}| {percent}%', end='')
-		
+
+		for sw in self.dict_sws_embs:
+			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])  
+	
 		return self.dict_sws_embs
 	
 
