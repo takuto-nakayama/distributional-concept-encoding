@@ -1,0 +1,14 @@
+
+Analysis began: 21:07:12.
+-----initial settings-----
+data source: bible copy.txt
+project id: test
+data id: bible
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+sample number: 100000
+data length: 31102 lines
+--------------------------

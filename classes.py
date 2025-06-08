@@ -45,6 +45,11 @@ class General:
 			print(f'Mode Error: mode \"{mode}\" is invalid. "path" for loading a file on the device; "url" for a web scraping.')
 			sys.exit()
 
+	def subwords(self, dict_embeddings):
+		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
+			f.write(f'data amount: {len(dict_embeddings)} subwords')
+		print(f'Data amount: {len(dict_embeddings)} subwords.')
+
 
 
 class Embedding:
@@ -65,7 +70,7 @@ class Embedding:
 
 	def embed(self, batch):
 		for i in range(batch,len(self.text)+1, batch):
-			batch_text = self.text[i-batch:i]
+			batch_text = self.text[i-batch:i-1]
 			encoded = self.tokenizer(batch_text, return_tensors='pt', truncation=True, padding=True)
 			if self.gpu == 1:
 				encoded = {key: value.to(self.device) for key, value in encoded.items()}
@@ -106,7 +111,11 @@ class Density:
 
 	def kde(self, dict_embeddings):
 		for sw in dict_embeddings:
-			self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T)
+			if dict_embeddings[sw].shape[0] < dict_embeddings[sw].shape[1]:
+				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T[:dict_embeddings[sw].shape[0]+1])
+			else:
+				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T)
+
 
 	
 	def entropy(self, num_samples:int):
