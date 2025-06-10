@@ -125,7 +125,7 @@ class Density:
 			cnt += 1
 			percent = int(cnt / len(dict_embeddings) * 100)
 			process = int(percent / 2)
-			print(f'\rkde: |{"#"*process}{"-"*(50-process)}| {percent}% ({cnt}/{len(self.dict_embeddings)})', end='')
+			print(f'\rkde: |{"#"*process}{"-"*(50-process)}| {percent}% ({cnt}/{len(dict_embeddings)})', end='')
 
 	
 	def entropy(self, num_samples:int):
