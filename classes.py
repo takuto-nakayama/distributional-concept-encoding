@@ -195,7 +195,7 @@ class Density:
 			os.mkdir(f'results/{self.project_id}/histograms')
 
 		plt.hist(self.list_entropy, bins=50)
-		plt.axvline(self.list_entropy, color='red', linestyle='dashed', linewidth=2, label=f"Mean: {self.mean_entropy:.2f}")
+		plt.axvline(self.mean_entropy, color='red', linestyle='dashed', linewidth=2, label=f"Mean: {self.mean_entropy:.2f}")
 		plt.title(f'{data_id}')
 		plt.xlabel('Entropy')
 		plt.ylabel('Frequency')
