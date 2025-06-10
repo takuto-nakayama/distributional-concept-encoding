@@ -1,7 +1,8 @@
 #  modules
 from classes import General, Embedding, Density
 from datetime import datetime
-import argparse, time, sys
+import argparse, time, warnings
+warnings.simplefilter('ignore', FutureWarning)
 
 #  main process
 if __name__ == '__main__':
@@ -50,15 +51,15 @@ data length: {len(general.text)} lines
 	density = Density(args.project_id)
 	
 	#  embedding text in data
-	dict_embeddings = embedding.embed(args.batch)
-	dict_embeddings = embedding.pca(args.d)
-	embedding.save()
+	embedding.embed(args.batch)
+	embedding.pca(args.d)
+	#embedding.save(args.data_id)
 	t = datetime.now()
-	general.subwords(dict_embeddings)
+	general.subwords(embedding.dict_sw_pca)
 	print(f'Subwords embedded: {t.strftime("%H:%M:%S")}.\n')
 
 	#  estimating probability density
-	density.kde(dict_embeddings)
+	density.kde(embedding.dict_sw_pca)
 	t = datetime.now()
 	print(f'\nKDE done: {t.strftime("%H:%M:%S")}.\n')
 

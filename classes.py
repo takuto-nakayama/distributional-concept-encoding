@@ -5,7 +5,7 @@ from collections import defaultdict
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import numpy as np
-import math, torch, os, csv, sys, statistics
+import math, torch, os, csv, sys, statistics, h5py
 
 
 
@@ -64,6 +64,7 @@ class Embedding:
 		self.tokenizer = BertTokenizer.from_pretrained(tokenizer)
 		self.model = BertModel.from_pretrained(model)
 		self.gpu = gpu
+		self.project_id = project_id
 		self.text = text
 		self.dict_sws_embs = defaultdict(list)
 
@@ -76,8 +77,8 @@ class Embedding:
 
 
 	def embed(self, batch):
-		for i in range(batch,len(self.text)+1, batch):
-			batch_text = self.text[i-batch:i-1]
+		for i in range(batch,len(self.text)+batch, batch):
+			batch_text = self.text[i-batch:min((i, len(self.text)))]
 			encoded = self.tokenizer(batch_text, return_tensors='pt', truncation=True, padding=True)
 			if self.gpu == 1:
 				encoded = {key: value.to(self.device) for key, value in encoded.items()}
@@ -90,28 +91,36 @@ class Embedding:
 
 			percent = int(i / len(self.text) * 100)
 			process = int(percent / 2)
-			print(f'\rembedding: |{"#"*process}{"-"*(50-process)}| {percent}% ({i}/{len(self.text)})', end='')
+			print(f'\rembedding: |{"#"*process}{"-"*(50-process)}| {percent}% ({min((i,len(self.text)))}/{len(self.text)})', end='')
 
 		for sw in self.dict_sws_embs:
 			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])  
-	
-		return self.dict_sws_embs
-	
+		
 
 	## Dimension reduction is required to make the number of data samples greater than the number of dimensions of each data for KDE.
 	def pca(self, d):
-		dict_sw_pca = {}
+		self.dict_sw_pca = {}
 		pca = PCA(n_components=d)
 		
 		for sw in self.dict_sws_embs:
-			dict_sw_pca[sw] = pca.fit_transform(self.dict_sws_embs[sw])
-		
-		return dict_sw_pca
-	
+			try:
+				self.dict_sw_pca[sw] = pca.fit_transform(self.dict_sws_embs[sw])
+			except:
+				continue
 
 	## write to a .hdf5 file.
-	def save(self):
-		pass
+	def save(self, data_id):
+		if f'emb-{self.project_id}.hdf5' not in os.listdir(f'results/{self.project_id}'):
+			with h5py.File(f'results/{self.project_id}/emb-{data_id}.hdf5', 'w') as f:
+				group = f.create_group(data_id)
+				for sw, emb in self.dict_sw_pca.items():
+					group.create_dataset(sw, data=emb)
+		else:
+			with h5py.File(f'results/{self.project_id}/emb-{data_id}.hdf5', 'a') as f:
+				group = f.create_group(data_id)
+				for sw, emb in self.dict_sw_pca.items():
+					group.create_dataset(sw, data=emb)
+
 
 
 class Density:
@@ -125,7 +134,7 @@ class Density:
 		cnt = 0
 		for sw in dict_embeddings:
 			try:
-				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T)
+				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].T)
 			except ValueError:
 				pass
 			cnt += 1
@@ -156,7 +165,7 @@ class Density:
 		if 'entropy.csv' not in os.listdir(f'results/{self.project_id}'):
 			with open(f'results/{self.project_id}/entropy.csv', 'w', encoding='utf-8') as f:
 				writer = csv.writer(f)
-				writer.writerow([data_id, self.entropy])
+				writer.writerow([data_id, self.mean_entropy])
 		else:
 			with open(f'results/{self.project_id}/entropy.csv', 'a', encoding='utf-8') as f:
 				writer = csv.writer(f)
@@ -186,7 +195,7 @@ class Density:
 			os.mkdir(f'results/{self.project_id}/histograms')
 
 		plt.hist(self.list_entropy, bins=50)
-		plt.axvline(self.entropy, color='red', linestyle='dashed', linewidth=2, label=f"Mean: {self.entropy:.2f}")
+		plt.axvline(self.list_entropy, color='red', linestyle='dashed', linewidth=2, label=f"Mean: {self.mean_entropy:.2f}")
 		plt.title(f'{data_id}')
 		plt.xlabel('Entropy')
 		plt.ylabel('Frequency')
