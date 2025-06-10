@@ -2,6 +2,7 @@ from transformers import BertTokenizer, BertModel
 from scipy.stats import gaussian_kde
 from datetime import datetime
 from collections import defaultdict
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import numpy as np
 import math, torch, os, csv, sys, statistics
@@ -98,14 +99,19 @@ class Embedding:
 	
 
 	## Dimension reduction is required to make the number of data samples greater than the number of dimensions of each data for KDE.
-	def compress(self):
-		pass
+	def pca(self, d):
+		dict_sw_pca = {}
+		pca = PCA(n_components=d)
+		
+		for sw in self.dict_sws_embs:
+			dict_sw_pca[sw] = pca.fit_transform(self.dict_sws_embs[sw])
+		
+		return dict_sw_pca
 	
 
 	## write to a .hdf5 file.
 	def save(self):
 		pass
-
 
 
 class Density:
@@ -148,11 +154,11 @@ class Density:
 	def save(self, data_id):
 		## save the mean of entropies of each subword
 		if 'entropy.csv' not in os.listdir(f'results/{self.project_id}'):
-			with open(f'results/{self.project_id}/{data_id}/entropy.csv', encoding='utf-8', mode='w') as f:
+			with open(f'results/{self.project_id}/entropy.csv', 'w', encoding='utf-8') as f:
 				writer = csv.writer(f)
 				writer.writerow([data_id, self.entropy])
 		else:
-			with open(f'results/{self.project_id}/{data_id}/entropy.csv', encoding='utf-8', mode='a') as f:
+			with open(f'results/{self.project_id}/entropy.csv', 'a', encoding='utf-8') as f:
 				writer = csv.writer(f)
 				writer.writerow([data_id, self.mean_entropy])
 
@@ -163,16 +169,17 @@ class Density:
 		for r in rank:
 			fd.append(sum(x <= r for x in self.list_entropy) - sum(x <= min for x in self.list_entropy))
 			min = r
+		fd.append(sum(x > 10.0 for x in self.list_entropy))
 
 		if 'frequency-distribution.csv' not in os.listdir(f'results/{self.project_id}'):
-			with open(f'results/{self.project_id}/{data_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
+			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
-				writer.writerow([''] + fd)
+				writer.writerow([''] + fd + ['10.0 <'])
 				writer.writerow(fd)
 		else:
-			with open(f'results/{self.project_id}/{data_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
+			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
 				writer = csv.writer(f)
-				writer.writerow([f'{data_id}'] + fd)
+				writer.writerow([f'{data_id}'] + fd + ['10.0 <'])
 
 		## plot histograms of entropy frequency
 		if 'histograms' not in os.listdir(f'results/{self.project_id}'):

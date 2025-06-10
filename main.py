@@ -15,6 +15,7 @@ if __name__ == '__main__':
 	parser.add_argument('--model', type=str, help='Model to use', default='bert-base-cased')
 	parser.add_argument('--gpu', type=int, default=1, nargs='?', const=True, help='0: using CPU; 1: using GPU')
 	parser.add_argument('--batch', type=int, help='The number of lines that are simultaneously processed into embeddings', default=20)
+	parser.add_argument('--d', type=int, help='the number of dimension into which embeddings cpmpressed', default=100)
 	parser.add_argument('--num_samples', type=int, default=1000)
 	args = parser.parse_args()
 
@@ -50,6 +51,7 @@ data length: {len(general.text)} lines
 	
 	#  embedding text in data
 	dict_embeddings = embedding.embed(args.batch)
+	dict_embeddings = embedding.pca(args.d)
 	embedding.save()
 	t = datetime.now()
 	general.subwords(dict_embeddings)
