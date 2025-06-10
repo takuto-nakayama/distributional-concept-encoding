@@ -15,7 +15,7 @@ if __name__ == '__main__':
 	parser.add_argument('--model', type=str, help='Model to use', default='bert-base-cased')
 	parser.add_argument('--gpu', type=int, default=1, nargs='?', const=True, help='0: using CPU; 1: using GPU')
 	parser.add_argument('--batch', type=int, help='The number of lines that are simultaneously processed into embeddings', default=20)
-	parser.add_argument('--num_samples', type=int, default=100000)
+	parser.add_argument('--num_samples', type=int, default=1000)
 	args = parser.parse_args()
 
 	#  starting processing
@@ -53,13 +53,19 @@ data length: {len(general.text)} lines
 	embedding.save()
 	t = datetime.now()
 	general.subwords(dict_embeddings)
-	print(f'\n Subwords embedded: {t.strftime("%H:%M:%S")}.')
+	print(f'Subwords embedded: {t.strftime("%H:%M:%S")}.\n')
 
 	#  estimating probability density
 	density.kde(dict_embeddings)
+	t = datetime.now()
+	print(f'\nKDE done: {t.strftime("%H:%M:%S")}.\n')
+
 	density.entropy(args.num_samples)
+	general.entropy(density.mean_entropy)
+	t = datetime.now()
+	print(f'entropy done: {t.strftime("%H:%M:%S")}.')
+
 	density.save(args.data_id)
-	print(f'Entropy: {density.entropy()}.')
 
 	#  terminating the proess
 	end = time.time()

@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
-import math, torch, os, csv, sys
+import math, torch, os, csv, sys, statistics
 
 
 
@@ -24,8 +24,8 @@ class General:
 		if 'info' not in os.listdir(f'results/{self.project_id}'):
 			os.mkdir(f'results/{self.project_id}/info')
 		
-		if f'{self.data_id}.txt' in os.listdir(f'results/{self.project_id}/info'):
-			print('ID Error: The data id already exists in the directory. Try another.')
+		if f'info-{self.data_id}.txt' in os.listdir(f'results/{self.project_id}/info'):
+			print('IdError: The data id already exists in the directory. Try another.')
 			sys.exit()
 		
 		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'w') as f:
@@ -45,12 +45,18 @@ class General:
 			print(f'Mode Error: mode \"{mode}\" is invalid. "path" for loading a file on the device; "url" for a web scraping.')
 			sys.exit()
 
+
 	def subwords(self, dict_embeddings):
 		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
+			f.write('\n\n------result summary------\n')
 			f.write(f'data amount: {len(dict_embeddings)} subwords')
-		print(f'Data amount: {len(dict_embeddings)} subwords.')
+		print(f'\nData amount: {len(dict_embeddings)} subwords.')
 
 
+	def entropy(self, entropy):
+		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
+			f.write(f'entropy: {entropy}')
+		print(f'\nentropy: {entropy}')
 
 class Embedding:
 	def __init__(self, tokenizer:str, model:str, gpu:int, project_id:str, text:list):
@@ -83,7 +89,7 @@ class Embedding:
 
 			percent = int(i / len(self.text) * 100)
 			process = int(percent / 2)
-			print(f'\rprocessed: |{"#"*process}{"-"*(50-process)}| {percent}%', end='')
+			print(f'\rembedding: |{"#"*process}{"-"*(50-process)}| {percent}% ({i}/{len(self.text)})', end='')
 
 		for sw in self.dict_sws_embs:
 			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])  
@@ -110,36 +116,67 @@ class Density:
 
 
 	def kde(self, dict_embeddings):
+		cnt = 0
 		for sw in dict_embeddings:
-			if dict_embeddings[sw].shape[0] < dict_embeddings[sw].shape[1]:
-				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T[:dict_embeddings[sw].shape[0]+1])
-			else:
+			try:
 				self.dict_kde[sw] = gaussian_kde(dict_embeddings[sw].detach().numpy().T)
-
+			except ValueError:
+				pass
+			cnt += 1
+			percent = int(cnt / len(dict_embeddings) * 100)
+			process = int(percent / 2)
+			print(f'\rkde: |{"#"*process}{"-"*(50-process)}| {percent}% ({cnt}/{len(self.dict_embeddings)})', end='')
 
 	
 	def entropy(self, num_samples:int):
+		cnt = 0
 		for sw, kde in self.dict_kde.items():
 			samples = kde.resample(num_samples)
-			log_probs = np.log(kde.pdf(samples))
-			epsilon = 1e-12
-			self.list_entropy.append(-np.mean(log_probs+epsilon))
-		
-		self.entropy = math.mean(self.list_entropy)
+			pdf_vals = kde.pdf(samples)
+			pdf_vals = np.clip(pdf_vals, 1e-12, None)
+			log_probs = np.log2(pdf_vals)
+			self.list_entropy.append(-np.mean(log_probs))
+
+			cnt += 1
+			percent = int(cnt / len(self.dict_kde) * 100)
+			process = int(percent / 2)
+			print(f'\rentropy: |{"#"*process}{"-"*(50-process)}| {percent}% ({cnt}/{len(self.dict_kde)})', end='')
+
+		self.mean_entropy = statistics.mean(self.list_entropy)
 
 
 	def save(self, data_id):
+		## save the mean of entropies of each subword
 		if 'entropy.csv' not in os.listdir(f'results/{self.project_id}'):
-			with open('entropy.csv', encoding='utf-8', mode='w') as f:
+			with open(f'results/{self.project_id}/{data_id}/entropy.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
 				writer.writerow([data_id, self.entropy])
 		else:
-			with open('entropy.csv', encoding='utf-8', mode='a') as f:
+			with open(f'results/{self.project_id}/{data_id}/entropy.csv', encoding='utf-8', mode='a') as f:
 				writer = csv.writer(f)
-				writer.writerow([data_id, self.entropy])
+				writer.writerow([data_id, self.mean_entropy])
 
+		## save frequency distribution
+		rank = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.0, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 9.0, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 10.0]
+		fd = []
+		min = 0
+		for r in rank:
+			fd.append(sum(x <= r for x in self.list_entropy) - sum(x <= min for x in self.list_entropy))
+			min = r
+
+		if 'frequency-distribution.csv' not in os.listdir(f'results/{self.project_id}'):
+			with open(f'results/{self.project_id}/{data_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
+				writer = csv.writer(f)
+				writer.writerow([''] + fd)
+				writer.writerow(fd)
+		else:
+			with open(f'results/{self.project_id}/{data_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
+				writer = csv.writer(f)
+				writer.writerow([f'{data_id}'] + fd)
+
+		## plot histograms of entropy frequency
 		if 'histograms' not in os.listdir(f'results/{self.project_id}'):
-			os.mkdir('histograms')
+			os.mkdir(f'results/{self.project_id}/histograms')
 
 		plt.hist(self.list_entropy, bins=50)
 		plt.axvline(self.entropy, color='red', linestyle='dashed', linewidth=2, label=f"Mean: {self.entropy:.2f}")
