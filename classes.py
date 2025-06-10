@@ -183,7 +183,7 @@ class Density:
 		if 'frequency-distribution.csv' not in os.listdir(f'results/{self.project_id}'):
 			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
-				writer.writerow([''] + fd + ['10.0 <'])
+				writer.writerow([''] + rank + ['10.0 <'])
 				writer.writerow(fd)
 		else:
 			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
