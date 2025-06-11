@@ -1,9 +1,9 @@
-Analysis began: 01:04:12.
+Analysis began: 16:56:39.
 
 -----initial settings-----
 data source: bible.txt
 project id: test
-data id: bible-100d
+data id: bible
 mode: path
 tokenizer: bert-base-cased
 model: bert-base-cased
@@ -14,4 +14,4 @@ data length: 31102 lines
 
 
 ------result summary------
-data amount: 1069 subwordsentropy: 37.20950621792487
+data amount: 1069 subwordsentropy: 37.23046482089236
