@@ -59,6 +59,8 @@ class General:
 			f.write(f'\nentropy: {entropy}')
 		print(f'\nentropy: {entropy}')
 
+
+
 class Embedding:
 	def __init__(self, tokenizer:str, model:str, gpu:int, project_id:str, text:list):
 		self.tokenizer = BertTokenizer.from_pretrained(tokenizer)
@@ -184,11 +186,11 @@ class Density:
 			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
 				writer.writerow([''] + rank + ['10.0 <'])
-				writer.writerow(fd)
+				writer.writerow([f'{data_id}'] + fd)
 		else:
 			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
 				writer = csv.writer(f)
-				writer.writerow([f'{data_id}'] + fd + ['10.0 <'])
+				writer.writerow([f'{data_id}'] + fd)
 
 		## plot histograms of entropy frequency
 		if 'histograms' not in os.listdir(f'results/{self.project_id}'):
