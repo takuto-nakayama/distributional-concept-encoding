@@ -56,7 +56,7 @@ class General:
 
 	def entropy(self, entropy):
 		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
-			f.write(f'entropy: {entropy}')
+			f.write(f'\nentropy: {entropy}')
 		print(f'\nentropy: {entropy}')
 
 class Embedding:
@@ -200,4 +200,3 @@ class Density:
 		plt.xlabel('Entropy')
 		plt.ylabel('Frequency')
 		plt.savefig(f'results/{self.project_id}/histograms/histogram-{data_id}.png')
-		plt.show()
