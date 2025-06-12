@@ -113,12 +113,13 @@ class Embedding:
 	## write to a .hdf5 file.
 	def save(self, data_id):
 		if f'emb-{self.project_id}.hdf5' not in os.listdir(f'results/{self.project_id}'):
-			with h5py.File(f'results/{self.project_id}/emb-{data_id}.hdf5', 'w') as f:
+			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'w') as f:
 				group = f.create_group(data_id)
 				for sw, emb in self.dict_sw_pca.items():
 					group.create_dataset(sw, data=emb)
+		
 		else:
-			with h5py.File(f'results/{self.project_id}/emb-{data_id}.hdf5', 'a') as f:
+			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'a') as f:
 				group = f.create_group(data_id)
 				for sw, emb in self.dict_sw_pca.items():
 					group.create_dataset(sw, data=emb)

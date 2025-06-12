@@ -53,7 +53,7 @@ data length: {len(general.text)} lines
 	#  embedding text in data
 	embedding.embed(args.batch)
 	embedding.pca(args.d)
-	#embedding.save(args.data_id)
+	embedding.save(args.data_id)
 	t = datetime.now()
 	general.subwords(embedding.dict_sw_pca)
 	print(f'Subwords embedded: {t.strftime("%H:%M:%S")}.\n')
