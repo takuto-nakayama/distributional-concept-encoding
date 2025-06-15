@@ -184,12 +184,12 @@ class Density:
 		fd.append(sum(x > 10.0 for x in self.list_entropy))
 
 		if 'frequency-distribution.csv' not in os.listdir(f'results/{self.project_id}'):
-			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='w') as f:
+			with open(f'results/{self.project_id}/frequency-distribution.csv', encoding='utf-8', mode='w') as f:
 				writer = csv.writer(f)
 				writer.writerow([''] + rank + ['10.0 <'])
 				writer.writerow([f'{data_id}'] + fd)
 		else:
-			with open(f'results/{self.project_id}/frequency-distribtion.csv', encoding='utf-8', mode='a') as f:
+			with open(f'results/{self.project_id}/frequency-distribution.csv', encoding='utf-8', mode='a') as f:
 				writer = csv.writer(f)
 				writer.writerow([f'{data_id}'] + fd)
 
