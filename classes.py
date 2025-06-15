@@ -1,11 +1,11 @@
 from transformers import BertTokenizer, BertModel
 from scipy.stats import gaussian_kde
+from scipy.integrate import nquad
 from datetime import datetime
 from collections import defaultdict
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import numpy as np
-import math, torch, os, csv, sys, statistics, h5py
+import torch, os, csv, sys, statistics, h5py, umap
 
 
 
@@ -47,11 +47,13 @@ class General:
 			sys.exit()
 
 
-	def subwords(self, dict_embeddings):
+	def subwords(self, dict_embs, dict_umap):
 		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
-			f.write('\n\n------result summary------\n')
-			f.write(f'data amount: {len(dict_embeddings)} subwords')
-		print(f'\nData amount: {len(dict_embeddings)} subwords.')
+			f.write(f'''\n\n------result summary------
+		   data amount: {len(dict_embs)} subwords
+		   umapped: {len(dict_umap)} subwords''')
+		print(f'''\nData amount: {len(dict_embs)} subwords.
+		Umapped into: {len(dict_umap)} subwords.''')
 
 
 	def entropy(self, entropy):
@@ -99,29 +101,25 @@ class Embedding:
 			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])  
 		
 
-	## Dimension reduction is required to make the number of data samples greater than the number of dimensions of each data for KDE.
-	def pca(self, d):
-		self.dict_sw_pca = {}
-		pca = PCA(n_components=d)
-		
-		for sw in self.dict_sws_embs:
-			try:
-				self.dict_sw_pca[sw] = pca.fit_transform(self.dict_sws_embs[sw])
-			except:
-				continue
+	def umap(self, neighbors:int):
+		self.dict_sw_umap = {}
+		reducer = umap.UMAP(n_neighbors=neighbors, min_dist=0.1)
+		for sw, emb in self.dict_sws_embs.items():
+			if len(self.dict_sws_embs[sw]) > neighbors * 5:
+				self.dict_sw_umap[sw] = reducer.fit_transform(emb)
 
-	## write to a .hdf5 file.
+
 	def save(self, data_id):
-		if f'emb-{self.project_id}.hdf5' not in os.listdir(f'results/{self.project_id}'):
+		if f'embembeddings.hdf5' not in os.listdir(f'results/{self.project_id}'):
 			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'w') as f:
 				group = f.create_group(data_id)
-				for sw, emb in self.dict_sw_pca.items():
+				for sw, emb in self.dict_sw_umap.items():
 					group.create_dataset(sw, data=emb)
 		
 		else:
 			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'a') as f:
 				group = f.create_group(data_id)
-				for sw, emb in self.dict_sw_pca.items():
+				for sw, emb in self.dict_sw_umap.items():
 					group.create_dataset(sw, data=emb)
 
 
@@ -146,14 +144,18 @@ class Density:
 			print(f'\rkde: |{"#"*process}{"-"*(50-process)}| {percent}% ({cnt}/{len(dict_embeddings)})', end='')
 
 	
-	def entropy(self, num_samples:int):
+	def entropy(self, dict_embeddings:dict):
 		cnt = 0
 		for sw, kde in self.dict_kde.items():
-			samples = kde.resample(num_samples)
-			pdf_vals = kde.pdf(samples)
-			pdf_vals = np.clip(pdf_vals, 1e-12, None)
-			log_probs = np.log2(pdf_vals)
-			self.list_entropy.append(-np.mean(log_probs))
+
+			def integrand(y, x):
+				p = kde([x, y])[0]
+				return -p * np.log2(p + 1e-12)
+			
+			x_min, x_max = min(dict_embeddings[sw][:,0]), max(dict_embeddings[sw][:,0])
+			y_min, y_max = min(dict_embeddings[sw][:,1]), max(dict_embeddings[sw][:,1])
+			H, _ = nquad(integrand, [[y_min, y_max], [x_min, x_max]])
+			self.list_entropy.append(H)
 
 			cnt += 1
 			percent = int(cnt / len(self.dict_kde) * 100)

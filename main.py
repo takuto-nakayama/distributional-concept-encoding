@@ -16,8 +16,7 @@ if __name__ == '__main__':
 	parser.add_argument('--model', type=str, help='Model to use', default='bert-base-cased')
 	parser.add_argument('--gpu', type=int, default=1, nargs='?', const=True, help='0: using CPU; 1: using GPU')
 	parser.add_argument('--batch', type=int, help='The number of lines that are simultaneously processed into embeddings', default=20)
-	parser.add_argument('--d', type=int, help='the number of dimension into which embeddings cpmpressed', default=100)
-	parser.add_argument('--num_samples', type=int, default=1000)
+	parser.add_argument('--neighbors', type=int, help='the number of dimension into which embeddings cpmpressed', default=200)
 	args = parser.parse_args()
 
 	#  starting processing
@@ -40,7 +39,7 @@ tokenizer: {args.tokenizer}
 model: {args.model}
 gpu: {'yes' if args.gpu==1 else 'no'}
 batch: {args.batch}
-sample number: {args.num_samples}
+n_neighbors: {args.neighbors} (for UMAP)
 data length: {len(general.text)} lines
 '''
 	general.info(info)
@@ -52,18 +51,18 @@ data length: {len(general.text)} lines
 	
 	#  embedding text in data
 	embedding.embed(args.batch)
-	embedding.pca(args.d)
+	embedding.umap(args.neighbors)
 	embedding.save(args.data_id)
 	t = datetime.now()
-	general.subwords(embedding.dict_sw_pca)
+	general.subwords(embedding.dict_sw_umap)
 	print(f'Subwords embedded: {t.strftime("%H:%M:%S")}.\n')
 
 	#  estimating probability density
-	density.kde(embedding.dict_sw_pca)
+	density.kde(embedding.dict_sw_umap)
 	t = datetime.now()
 	print(f'\nKDE done: {t.strftime("%H:%M:%S")}.\n')
 
-	density.entropy(args.num_samples)
+	density.entropy(embedding.dict_sw_umap)
 	general.entropy(density.mean_entropy)
 	t = datetime.now()
 	print(f'entropy done: {t.strftime("%H:%M:%S")}.')
