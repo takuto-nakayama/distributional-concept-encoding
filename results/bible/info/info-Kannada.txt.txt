@@ -1,0 +1,19 @@
+Analysis began: 20:15:17.
+
+-----initial settings-----
+data source: bibles/FullText/Kannada.txt
+project id: bible
+data id: Kannada.txt
+data length: 31136 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 6 subwords
+entropy: 9.020874856724438

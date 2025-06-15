@@ -1,0 +1,19 @@
+Analysis began: 03:12:34.
+
+-----initial settings-----
+data source: bibles/FullText/Korean.txt
+project id: bible
+data id: Korean.txt
+data length: 31230 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 3 subwords
+entropy: 7.438525488260837

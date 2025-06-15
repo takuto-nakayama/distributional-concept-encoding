@@ -1,0 +1,19 @@
+Analysis began: 15:20:44.
+
+-----initial settings-----
+data source: bibles/FullText/English.txt
+project id: bible
+data id: English.txt
+data length: 31102 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 133 subwords
+entropy: 5.599912429636456

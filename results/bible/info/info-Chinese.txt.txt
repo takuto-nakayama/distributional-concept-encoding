@@ -1,0 +1,14 @@
+Analysis began: 14:01:40.
+
+-----initial settings-----
+data source: bibles/FullText/Chinese.txt
+project id: bible
+data id: Chinese.txt
+data length: 31101 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000

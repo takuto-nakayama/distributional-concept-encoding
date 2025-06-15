@@ -1,0 +1,19 @@
+Analysis began: 18:34:33.
+
+-----initial settings-----
+data source: bibles/FullText/Hungarian.txt
+project id: bible
+data id: Hungarian.txt
+data length: 31298 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 271 subwords
+entropy: 7.158254056347793

@@ -1,0 +1,19 @@
+Analysis began: 19:58:39.
+
+-----initial settings-----
+data source: bibles/FullText/Japanese.txt
+project id: bible
+data id: Japanese.txt
+data length: 31087 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 96 subwords
+entropy: 7.052736863436659

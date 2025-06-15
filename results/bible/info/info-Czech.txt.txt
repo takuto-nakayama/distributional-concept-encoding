@@ -1,0 +1,19 @@
+Analysis began: 14:20:58.
+
+-----initial settings-----
+data source: bibles/FullText/Czech.txt
+project id: bible
+data id: Czech.txt
+data length: 31102 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 249 subwords
+entropy: 7.603109271630582

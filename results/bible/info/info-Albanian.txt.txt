@@ -1,0 +1,19 @@
+Analysis began: 11:43:32.
+
+-----initial settings-----
+data source: bibles/FullText/Albanian.txt
+project id: bible
+data id: Albanian.txt
+data length: 31102 lines
+mode: path
+tokenizer: bert-base-cased
+model: bert-base-cased
+gpu: yes
+batch: 20
+min_data for each subword: 1000
+sample number for entropy: 1000
+
+
+------result summary------
+data amount: 254 subwords
+entropy: 7.603185707264271
