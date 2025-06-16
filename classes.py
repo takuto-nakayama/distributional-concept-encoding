@@ -117,17 +117,25 @@ class Embedding:
 			
 
 	def save(self, data_id):
-		if f'embembeddings.hdf5' not in os.listdir(f'results/{self.project_id}'):
+		if f'embeddings.hdf5' not in os.listdir(f'results/{self.project_id}'):
 			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'w') as f:
 				group = f.create_group(data_id)
 				for sw, emb in self.dict_sw_umap.items():
-					group.create_dataset(sw, data=emb)
+					try:
+						group.create_dataset(sw, data=emb)
+					except:
+						print(f'something wrong: {sw}')
+						continue
 		
 		else:
 			with h5py.File(f'results/{self.project_id}/embeddings.hdf5', 'a') as f:
 				group = f.create_group(data_id)
 				for sw, emb in self.dict_sw_umap.items():
-					group.create_dataset(sw, data=emb)
+					try:
+						group.create_dataset(sw, data=emb)
+					except:
+						print(f'something wrong: {sw}')
+						continue
 
 
 
