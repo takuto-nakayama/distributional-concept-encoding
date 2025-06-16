@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	parser.add_argument('--model', type=str, help='Model to use', default='bert-base-cased')
 	parser.add_argument('--gpu', type=int, default=1, nargs='?', const=True, help='0: using CPU; 1: using GPU')
 	parser.add_argument('--batch', type=int, help='The number of lines that are simultaneously processed into embeddings', default=20)
-	parser.add_argument('--neighbors', type=int, help='the number of dimension into which embeddings cpmpressed', default=200)
+	parser.add_argument('--neighbors', type=int, help='the number of dimension into which embeddings cpmpressed', default=100)
 	args = parser.parse_args()
 
 	#  starting processing
@@ -40,6 +40,7 @@ model: {args.model}
 gpu: {'yes' if args.gpu==1 else 'no'}
 batch: {args.batch}
 n_neighbors: {args.neighbors} (for UMAP)
+minimum samples: {args.neighbors * 5}
 data length: {len(general.text)} lines
 '''
 	general.info(info)

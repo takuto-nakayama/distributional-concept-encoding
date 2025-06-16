@@ -104,10 +104,17 @@ class Embedding:
 	def umap(self, neighbors:int):
 		self.dict_sw_umap = {}
 		reducer = umap.UMAP(n_neighbors=neighbors, min_dist=0.1)
+		cnt = 1
+		amount = len(self.dict_sws_embs)
+
 		for sw, emb in self.dict_sws_embs.items():
-			if len(self.dict_sws_embs[sw]) > neighbors * 5:
+			if sw not in ['[CLS]', '[SEP]', '[PAD]', '[MASK]'] and len(self.dict_sws_embs[sw]) > neighbors * 5:
 				self.dict_sw_umap[sw] = reducer.fit_transform(emb)
 
+			percent = int(cnt / amount * 100)
+			print(f'\rdimension reduction: |{"#"*(percent//2)}{"-"*(50-(percent//2))}| {percent}% ({cnt}/{amount})', end='')
+			cnt += 1
+			
 
 	def save(self, data_id):
 		if f'embembeddings.hdf5' not in os.listdir(f'results/{self.project_id}'):
