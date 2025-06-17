@@ -50,10 +50,8 @@ class General:
 	def subwords(self, dict_embs, dict_umap):
 		with open(f'results/{self.project_id}/info/info-{self.data_id}.txt', 'a') as f:
 			f.write(f'''\n\n------result summary------
-		   data amount: {len(dict_embs)} subwords
-		   umapped: {len(dict_umap)} subwords''')
-		print(f'''\nData amount: {len(dict_embs)} subwords.
-		Umapped into: {len(dict_umap)} subwords.''')
+data amount: {len(dict_embs)} subwords
+umapped: {len(dict_umap)} subwords''')
 
 
 	def entropy(self, entropy):
@@ -98,7 +96,8 @@ class Embedding:
 			print(f'\rembedding: |{"#"*process}{"-"*(50-process)}| {percent}% ({min((i,len(self.text)))}/{len(self.text)})', end='')
 
 		for sw in self.dict_sws_embs:
-			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])  
+			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])
+		print(f'Data amount: {len(self.dict_sws_embs)} subwords.\n')
 		
 
 	def umap(self, neighbors:int):
@@ -112,8 +111,9 @@ class Embedding:
 				self.dict_sw_umap[sw] = reducer.fit_transform(emb)
 
 			percent = int(cnt / amount * 100)
-			print(f'\rdimension reduction: |{"#"*(percent//2)}{"-"*(50-(percent//2))}| {percent}% ({cnt}/{amount})', end='')
+			print(f'\n\rdimension reduction: |{"#"*(percent//2)}{"-"*(50-(percent//2))}| {percent}% ({cnt}/{amount})', end='')
 			cnt += 1
+		print(f'Umapped: {len(self.dict_sw_umap)} subwords.')
 			
 
 	def save(self, data_id):
