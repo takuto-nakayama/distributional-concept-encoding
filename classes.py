@@ -98,9 +98,8 @@ class Embedding:
 		for sw in self.dict_sws_embs:
 			try:
 				self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])
-			except:
-				if self.dict_sws_embs[sw].size() != torch.Size([768]):
-					print(f'ValueError: subword {sw} has shape [{self.dict_sws_embs[sw].size()}]')
+			except Exception as e:
+				print(f'{e}: {sw}')
 
 		print(f'Data amount: {len(self.dict_sws_embs)} subwords.\n')
 		
