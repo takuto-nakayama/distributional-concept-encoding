@@ -96,7 +96,12 @@ class Embedding:
 			print(f'\rembedding: |{"#"*process}{"-"*(50-process)}| {percent}% ({min((i,len(self.text)))}/{len(self.text)})', end='')
 
 		for sw in self.dict_sws_embs:
-			self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])
+			try:
+				self.dict_sws_embs[sw] = torch.stack(self.dict_sws_embs[sw])
+			except:
+				if self.dict_sws_embs[sw].size() != torch.Size([768]):
+					print(f'ValueError: subword {sw} has shape [{self.dict_sws_embs[sw].size()}]')
+
 		print(f'Data amount: {len(self.dict_sws_embs)} subwords.\n')
 		
 
